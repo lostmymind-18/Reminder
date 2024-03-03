@@ -51,12 +51,29 @@ function SideBar({categories,tasks}){
 
 function Heading({name}){
     return (
-        <div className="Heading">
-            <button type="button"></button>
-            <div className="Heading-name">
-                {name}
+        <>
+            <div className="Heading">
+                <div className="Heading-add-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="rgb(153,153,154)" class="bi bi-plus" viewBox="0 0 16 16">
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                    </svg>
+                </div>
+                <div className="Heading-name">
+                    {name}
+                </div>
             </div>
-        </div>
+            <div className="Inform-completed-task">
+                <div className="inform-text">
+                    There are 269 tasks done &#8729;&nbsp;
+                </div>
+                <div className="delete-completed-tasks">
+                    Delete
+                </div>
+                <div className="show-completed-tasks">
+                    Show
+                </div>
+            </div>
+        </>
     )
 }
 
@@ -66,14 +83,30 @@ function Task({task}){
     )
 }
 
-function TaskTable({tasks}){
-    let taskJsx = []
-    for(let i = 0; i < tasks.length; i++){
-        taskJsx.push(<Task task={tasks[i]}/>);
+function TaskTableAllList({listName, tasks}){
+    return (
+        <>
+        </>
+    )
+}
+
+function TaskTableAll({tasks}){
+    let tasksOfLists = {}
+    tasks.forEach((task)=>{
+        if(!tasksOfLists.hasOwnProperty(task.taskList)){
+            tasksOfLists[task.taskList] = [task];
+        }
+        else{
+            tasksOfLists[task.taskList].push(task);
+        }
+    })
+    let taskListJsx = [];
+    for(var list in tasksOfLists){
+        taskListJsx.push(<TaskTableAllList listName={list} tasks={tasksOfLists[list]}/>)
     }
     return (
         <div className="TaskTable">
-            {taskJsx}
+            {taskListJsx}
         </div>
     )
 }
@@ -82,7 +115,7 @@ function MainTable({name,tasks}){
     return (
         <div className="MainTable">
             <Heading name={name}/>
-            <TaskTable tasks={tasks}/>
+            <TaskTableAll tasks={tasks}/>
         </div>
     )
 }
@@ -99,10 +132,10 @@ function Reminder({categories,tasks}) {
 }
 
 const TASKS = [
-    {status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"}
+    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
+    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
+    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
+    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"}
 ];
 
 const CATEGORIES = [

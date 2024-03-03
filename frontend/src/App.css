@@ -31,7 +31,7 @@
 }
 
 .MenuItem {
-    height: 58px;
+    height: 40px;
     width: 105px;
     border-radius: 5px;
     margin-top: 0px;
@@ -50,7 +50,6 @@
 
 .MenuItem-icon{
     float: left;
-
 }
 
 .MenuItem-tasks-count{
@@ -64,7 +63,8 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    font-size: normal;
+    font-size: 13px;
+    font-weight: bold;
 }
 
 .Reminder {
@@ -86,4 +86,57 @@
     height: 100%;
     width: 100%;
     background-color: rgb(38,39,40);
+    padding: 15px;
+}
+
+.Heading {
+    height: 90px;
+    position: relative;
+}
+
+.Heading-name {
+    position: absolute;
+    bottom: 0;
+    font-size: xx-large;
+    font-weight: bold;
+    color: rgb(99,99,102);
+}
+
+.Heading-add-button{
+    position: absolute;
+    right: 0px;
+    top: 13px;
+}
+
+.Inform-completed-task {
+    height: 36px;
+    font-size: small;
+    border-bottom: 1px solid rgb(60,61,62);
+}
+
+.inform-text {
+    float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: rgb(150,150,151);
+    font-weight:600;
+}
+
+.delete-completed-tasks {
+    float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: rgb(99,99,101);
+    font-weight:600;
+}
+
+.show-completed-tasks {
+    float: right;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: rgb(99,99,101);
+    font-weight:600;
 }
