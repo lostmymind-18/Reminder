@@ -1,6 +1,6 @@
 .App {
      text-align: center;
-     background-image: linear-gradient(to right, rgba(255,0,0,0), rgba(255,0,0,1));
+     background-image: linear-gradient(to right, rgba(255,0,0,0), rgba(0,0,0,1));
      height: 100%;
      width: 100%;
 }
@@ -12,19 +12,37 @@
 
 .SearchBar {
     margin-top: 30px;
-    height: 26px;
-    width: 256px;
-    padding: 0px;
+    height: 27px;
+    width: 245px;
+    margin-left: 10px;
     border: 3px;
-    border-radius: 5px;
+    border-radius: 7px;
     background-color: rgb(60,61,62);
     color: white;
-    border-color: rgb(70,109,149);
+    padding-left: 7px;
+    padding-right: 7px;
+}
 
+.SearchBar-search-icon{
+    float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.SearchBar-search-text{
+    float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    margin-left: 7px;
+    color: rgb(99,99,102);
+    font-size: 13px;
+    font-weight: 550;
 }
 
 .Menu{
-    height: 300px;
+    height: 220px;
     width: 270px;
     margin-top: 20px;
     margin-left: 10px;
@@ -33,7 +51,7 @@
 .MenuItem {
     height: 40px;
     width: 105px;
-    border-radius: 5px;
+    border-radius: 7px;
     margin-top: 0px;
     margin-bottom: 10px;
     margin-right: 10px;
@@ -79,6 +97,7 @@
     height: 100%;
     width: 440px;
     background-color: rgb(38,39,40);
+    position: relative;
     opacity: 0.7;
 }
 
@@ -86,7 +105,7 @@
     height: 100%;
     width: 100%;
     background-color: rgb(38,39,40);
-    padding: 15px;
+    padding-left: 15px;
 }
 
 .Heading {
@@ -105,13 +124,15 @@
 .Heading-add-button{
     position: absolute;
     right: 0px;
-    top: 13px;
+    top: 10px;
+    right: 10px;
 }
 
 .Inform-completed-task {
     height: 36px;
     font-size: small;
     border-bottom: 1px solid rgb(60,61,62);
+    margin-top: 14px;
 }
 
 .inform-text {
@@ -139,4 +160,118 @@
     align-items: center;
     color: rgb(99,99,101);
     font-weight:600;
+    margin-right: 14px;
+}
+
+.TaskListName-Name{
+    color: rgb(241,154,55);
+    float: left;
+    margin-top: 7px;
+    font-size: 18px;
+    font-weight:850;
+    margin-bottom: 7px;
+}
+
+.Task{
+    float: left;
+    width: 100%;
+    display: flex;
+    min-height: 35px;
+}
+
+.Task-CheckBox{
+    flex-grow: 1;
+    float: left;
+    display: flex;
+    align-items: center;
+}
+
+.Task-Content{
+    flex-grow: 1;
+    float: left;
+    border-bottom: 1px solid rgb(60,61,62);
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-left: 12px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.AddList{
+    height: 20px;
+    width: 100%;
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+}
+
+.AddList-add-icon{
+    height: 100%;
+    float: left;
+    display: flex;
+    align-items: center;
+}
+
+.AddList-text{
+    height: 100%;
+    float: left;
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    font-size: 13px;
+    color: rgb(206,207,209)
+}
+
+.MyList{
+    height: 200px;
+    width: 259px;
+    margin-left: 10px;
+}
+
+.MyList-name{
+    float: left;
+    margin-left: 10px;
+    margin-bottom: 4px;
+    color: rgb(99,99,102);
+    font-size: 11px;
+    font-weight: 630;
+}
+
+.ListItem{
+    height: 35px;
+    width: 100%;
+    float: left;
+    border-radius: 5px;
+}
+
+.ListItem-icon{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    float: left;
+    margin-left: 7px;
+}
+
+.ListItem-name{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    float: left;
+    margin-left: 7px;
+    color: white;
+    font-size: 13px;
+    font-weight: 550;
+}
+
+.ListItem-count{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    float: right;
+    margin-right: 13px;
+    color: rgb(99,99,102);
+    font-weight: 480;
+    font-size: 14px;
 }
