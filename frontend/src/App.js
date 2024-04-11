@@ -1,21 +1,35 @@
 import logo from './logo.svg';
 import './App.css';
 
-function MenuItem({name,tasks}){
+function MenuItem({name,taskCount}){
     return (
         <div className="MenuItem">
             <div className="MenuItem-row">
                 <div className="MenuItem-tasks-count">
-                    {tasks.length}
+                    {taskCount}
                 </div>
             </div>
             <div className="MenuItem-row">
                 <div className="MenuItem-name">
-                    {name}
+                    {name.charAt(0).toUpperCase() + name.slice(1)}
                 </div>
             </div>
         </div>
     )
+}
+
+function Menu({categoryCount}){
+    const listMenuItems = [];
+    for(const [key,value] of Object.entries(categoryCount)){
+        listMenuItems.push(
+            <MenuItem name={key} taskCount={value}></MenuItem>
+        );
+    }
+    return (
+        <div className="Menu">
+            {listMenuItems}
+        </div>
+    );
 }
 
 function SearchBar(){
@@ -33,23 +47,7 @@ function SearchBar(){
     );
 }
 
-function Menu({categories, tasks}){
-    const menuItems = [];
-    categories.forEach((category)=>{
-        menuItems.push({name: category,tasks: tasks});
-    });
-    for(let i = 0; i < menuItems.length; i++){
-        let item = menuItems[i];
-        menuItems[i] = <MenuItem name={item.name} tasks={item.tasks}/>;
-    }
-    return (
-        <div className="Menu">
-            {menuItems}
-        </div>
-    );
-}
-
-function ListItem({name,tasks}){
+function ListItem({name, taskCount}){
     return (
         <div className="ListItem">
             <div className="ListItem-icon">
@@ -62,23 +60,25 @@ function ListItem({name,tasks}){
                 {name}
             </div>
             <div className="ListItem-count">
-                {tasks.length}
+                {taskCount}
             </div>
         </div>
     )
 }
 
-function MyList({list}){
-    let listJsx = []
-    list.forEach((item)=>{
-        listJsx.push(<ListItem name={"Reminder"} tasks={[]}/>)
-    })
+function MyList({listCount}){
+    const listListItems = [];
+    for(const [key,value] of Object.entries(listCount)){
+        listListItems.push(
+            <ListItem name={key} taskCount={value}></ListItem>
+        );
+    }
     return (
         <div className="MyList">
             <div className="MyList-name">
                 My list
             </div>
-            {listJsx}
+            {listListItems}
         </div>
     )
 }
@@ -99,18 +99,18 @@ function AddList(){
     )
 }
 
-function SideBar({categories,tasks}){
+function SideBar({categoryCount,listCount}){
     return (
         <div className="SideBar">
             <SearchBar/>
-            <Menu categories={categories} tasks={tasks}/>
-            <MyList list={["Reminder","Sport"]}/>
+            <Menu categoryCount={categoryCount}/>
+            <MyList listCount={listCount}/>
             <AddList/>
         </div>
     )
 }
 
-function Heading({name}){
+function Heading({name,taskDoneCount}){
     return (
         <>
             <div className="Heading">
@@ -125,7 +125,7 @@ function Heading({name}){
             </div>
             <div className="Inform-completed-task">
                 <div className="inform-text">
-                    There are 269 tasks done &#8729;&nbsp;
+                    There are {taskDoneCount} tasks done &#8729;&nbsp;
                 </div>
                 <div className="delete-completed-tasks">
                     Delete
@@ -165,7 +165,7 @@ function Task({task, last}){
     )
 }
 
-function TaskListName({listName, tasks}){
+function TaskList({listName, tasks}){
     let taskList = [];
     tasks.forEach((task)=>{
         taskList.push(<Task task={task}/>)
@@ -176,66 +176,108 @@ function TaskListName({listName, tasks}){
             {listName}
         </div>
         {taskList}
-        <Task task={NaN} last={true}/>
         </>
     )
 }
 
-function TaskTableAll({tasks}){
-    let tasksOfLists = {}
-    tasks.forEach((task)=>{
-        if(!tasksOfLists.hasOwnProperty(task.taskList)){
-            tasksOfLists[task.taskList] = [task];
-        }
-        else{
-            tasksOfLists[task.taskList].push(task);
-        }
-    })
-    let taskListJsx = [];
-    for(var list in tasksOfLists){
-        taskListJsx.push(<TaskListName listName={list} tasks={tasksOfLists[list]}/>)
+function TaskTable({listLists}){
+    const listListsJsx = [];
+    for(const [key,value] of Object.entries(listLists)){
+        listListsJsx.push(
+            <TaskList listName={key} tasks={value}></TaskList>
+        );
     }
     return (
         <div className="TaskTable">
-            {taskListJsx}
+            {listListsJsx}
+            <Task task={NaN} last={true}/>
         </div>
     )
 }
 
-function MainTable({name,tasks}){
+function MainTable({name,taskDoneCount,listLists}){
     return (
         <div className="MainTable">
-            <Heading name={name}/>
-            <TaskTableAll tasks={tasks}/>
+            <Heading name={name} taskDoneCount={taskDoneCount}/>
+            <TaskTable listLists={listLists}/>
         </div>
     )
 }
 
-function Reminder({categories,tasks}) {
-    let name = "All";
+function Reminder({tasks}) {
+    //1. Xác định các list và số lượng task trong từng list
+    let lists = {};
+    tasks.forEach(task => {
+        if(!Object.hasOwn(lists,task.listName)){
+            lists[task.listName] = [task]
+        }
+        else{
+            lists[task.listName].push(task)
+        }
+    });
+    let listCount = {};
+    for (const [key,value] of Object.entries(lists)){
+        listCount[key] = value.length;
+    }
+    //2. Xác định các danh mục và số lượng task trong từng danh mục
+    let listCategories = {all:tasks,today:[],done:[],scheduled:[]};
+    tasks.forEach(task=>{
+        if(task.status == "done")
+            listCategories.done.push(task);
+        else if(task.time!=""){
+            listCategories.scheduled.push(task);
+            const taskDate = new Date(task.time);
+            const today = new Date();
+            if(taskDate < today)
+                listCategories.today.push(task);
+        }
+    });
+    let categoryCount = {};
+    for(const [key,value] of Object.entries(listCategories)){
+        categoryCount[key] = value.length;
+    }
+    //3. Xác định MainTable sẽ có nội dung gì (nội dung sẽ được chỉ định ở bên phía side bar)
+    let content = "All";
+    //4. Với từng nội dung thì sẽ xác định header name, số task đã hoàn thành và danh sách các list tương ứng
+    let header = null;
+    let doneCount = null;
+    let renderList = null;
+    switch(content){
+        case "All":
+            header = "All";
+            doneCount = categoryCount.done;
+            renderList = lists;
+            break;
+        default:
+            break;
+    }
     return (
         <div className="Reminder">
-            <SideBar categories={categories} tasks={tasks}/>
-            <MainTable name={name} tasks={tasks}/>
+            <SideBar categoryCount={categoryCount} listCount={listCount}/>
+            <MainTable name={header} taskDoneCount={doneCount} listLists={renderList}/>
         </div>
     );
 }
 
 const TASKS = [
-    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"},
-    {taskList: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],day:"some day",location:"some location",priority:"some priority",image:"some image link"}
+    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22:00Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
 ];
 
-const CATEGORIES = [
-    "Today", "All", "Flag", "Done", "Deadline"
-];
+// const CATEGORIES = [
+//     "Today", "All","Done", "Scheduled"
+// ];
 
 export default function App(){
     return (
         <div className="App">
-            <Reminder categories={CATEGORIES} tasks={TASKS}/>
+            <Reminder tasks={TASKS}/>
         </div>
     );
 };
