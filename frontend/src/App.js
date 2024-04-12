@@ -1,5 +1,5 @@
-import logo from './logo.svg';
 import './App.css';
+import {useState} from 'react'
 
 function MenuItem({name,taskCount}){
     return (
@@ -32,7 +32,7 @@ function Menu({categoryCount}){
     );
 }
 
-function SearchBar(){
+function SearchBar({filterText, onFilterTextChange}){
     return (
         <div className="SearchBar">
             <div className="SearchBar-search-icon">
@@ -41,7 +41,13 @@ function SearchBar(){
                 </svg>
             </div>
             <div className="SearchBar-search-text">
-                Search
+            <input 
+                type="text" 
+                value={filterText} 
+                placeholder='Search...' 
+                className="SearchBar-input"
+                onChange={(e)=>{onFilterTextChange(e.target.value)}}
+                />
             </div>
         </div>
     );
@@ -99,10 +105,10 @@ function AddList(){
     )
 }
 
-function SideBar({categoryCount,listCount}){
+function SideBar({categoryCount,listCount, filterText, onFilterTextChange}){
     return (
         <div className="SideBar">
-            <SearchBar/>
+            <SearchBar filterText={filterText} onFilterTextChange={onFilterTextChange}/>
             <Menu categoryCount={categoryCount}/>
             <MyList listCount={listCount}/>
             <AddList/>
@@ -205,31 +211,39 @@ function MainTable({name,taskDoneCount,listLists}){
 }
 
 function Reminder({tasks}) {
+    const [filterText, setFilterText] = useState('');
     //1. Xác định các list và số lượng task trong từng list
     let lists = {};
     tasks.forEach(task => {
-        if(!Object.hasOwn(lists,task.listName)){
-            lists[task.listName] = [task]
+        if(!Object.hasOwn(lists,task.listName))
+            lists[task.listName] = {done:[],not_done:[]};
+
+        if(task.status === "done")
+            lists[task.listName].done.push(task);
+
+        else
+            lists[task.listName].not_done.push(task);
         }
-        else{
-            lists[task.listName].push(task)
-        }
-    });
+    );
     let listCount = {};
     for (const [key,value] of Object.entries(lists)){
-        listCount[key] = value.length;
+        listCount[key] = value.not_done.length;
     }
+
     //2. Xác định các danh mục và số lượng task trong từng danh mục
-    let listCategories = {all:tasks,today:[],done:[],scheduled:[]};
+    let listCategories = {all:[],today:[],done:[],scheduled:[]};
     tasks.forEach(task=>{
-        if(task.status == "done")
+        if(task.status === "done")
             listCategories.done.push(task);
-        else if(task.time!=""){
+        else{
+            listCategories.all.push(task);
+            if(task.time!==""){
             listCategories.scheduled.push(task);
             const taskDate = new Date(task.time);
             const today = new Date();
             if(taskDate < today)
                 listCategories.today.push(task);
+            }
         }
     });
     let categoryCount = {};
@@ -241,33 +255,39 @@ function Reminder({tasks}) {
     //4. Với từng nội dung thì sẽ xác định header name, số task đã hoàn thành và danh sách các list tương ứng
     let header = null;
     let doneCount = null;
-    let renderList = null;
+    let renderList = {};
     switch(content){
         case "All":
             header = "All";
             doneCount = categoryCount.done;
-            renderList = lists;
+            for(const [key,val] of Object.entries(lists)){
+                renderList[key] = val.not_done;
+            }
             break;
         default:
             break;
     }
     return (
         <div className="Reminder">
-            <SideBar categoryCount={categoryCount} listCount={listCount}/>
+            <SideBar 
+                categoryCount={categoryCount} 
+                listCount={listCount} 
+                filterText={filterText} 
+                onFilterTextChange={setFilterText} />
             <MainTable name={header} taskDoneCount={doneCount} listLists={renderList}/>
         </div>
     );
 }
 
 const TASKS = [
-    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22:00Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
+    {listName: "Reminder", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22:00Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
 ];
 
 // const CATEGORIES = [
