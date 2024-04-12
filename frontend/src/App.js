@@ -1,9 +1,26 @@
 import './App.css';
 import {useState} from 'react'
 
-function MenuItem({name,taskCount}){
+function MenuItem({name,taskCount,activity,onActivityChange}){
+    let bgcolor = "rgb(82,83,84)";
+    let color = "rgb(206,207,209)";
+    if(name==="scheduled" && activity==="scheduled")
+        bgcolor = "rgb(255,69,58)";
+    if(name==="today" && activity==="today")
+        bgcolor = "rgb(10,132,255)";
+    if(name==="done" && activity==="done")
+        bgcolor = "rgb(114,126,135)";
+    if(name==="all" && activity==="all")
+        bgcolor = "rgb(99,99,102)";
+    if(name === activity)
+        color = "white";
+
     return (
-        <div className="MenuItem">
+        <div 
+            className="MenuItem" 
+            style={{backgroundColor:bgcolor,color:color}}
+            onClick={()=>{onActivityChange(name)}}
+        >
             <div className="MenuItem-row">
                 <div className="MenuItem-tasks-count">
                     {taskCount}
@@ -18,11 +35,16 @@ function MenuItem({name,taskCount}){
     )
 }
 
-function Menu({categoryCount}){
+function Menu({categoryCount,activity,onActivityChange}){
     const listMenuItems = [];
     for(const [key,value] of Object.entries(categoryCount)){
         listMenuItems.push(
-            <MenuItem name={key} taskCount={value}></MenuItem>
+            <MenuItem 
+                name={key} 
+                taskCount={value} 
+                activity={activity}
+                onActivityChange={onActivityChange}
+            />
         );
     }
     return (
@@ -36,11 +58,11 @@ function SearchBar({filterText, onFilterTextChange}){
     return (
         <div className="SearchBar">
             <div className="SearchBar-search-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="rgb(225,225,225)" class="bi bi-search" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                    width="13" height="13" fill="rgb(225,225,225)" class="bi bi-search" viewBox="0 0 16 16">
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                 </svg>
             </div>
-            <div className="SearchBar-search-text">
             <input 
                 type="text" 
                 value={filterText} 
@@ -48,7 +70,13 @@ function SearchBar({filterText, onFilterTextChange}){
                 className="SearchBar-input"
                 onChange={(e)=>{onFilterTextChange(e.target.value)}}
                 />
-            </div>
+            {(filterText !== "") && (<div className="SearchBar-clear"
+                onClick={()=>{onFilterTextChange('')}}
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="rgb(225,225,225)" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+            </svg>
+        </div>)}
         </div>
     );
 }
@@ -105,11 +133,18 @@ function AddList(){
     )
 }
 
-function SideBar({categoryCount,listCount, filterText, onFilterTextChange}){
+function SideBar({categoryCount,listCount, filterText, onFilterTextChange,activity,onActivityChange}){
     return (
         <div className="SideBar">
-            <SearchBar filterText={filterText} onFilterTextChange={onFilterTextChange}/>
-            <Menu categoryCount={categoryCount}/>
+            <SearchBar 
+                filterText={filterText} 
+                onFilterTextChange={onFilterTextChange}
+            />
+            <Menu 
+                categoryCount={categoryCount} 
+                activity={activity}
+                onActivityChange={onActivityChange}
+            />
             <MyList listCount={listCount}/>
             <AddList/>
         </div>
@@ -201,7 +236,7 @@ function TaskTable({listLists}){
     )
 }
 
-function MainTable({name,taskDoneCount,listLists}){
+function MainTable({name,taskDoneCount,listLists,activity}){
     return (
         <div className="MainTable">
             <Heading name={name} taskDoneCount={taskDoneCount}/>
@@ -212,6 +247,7 @@ function MainTable({name,taskDoneCount,listLists}){
 
 function Reminder({tasks}) {
     const [filterText, setFilterText] = useState('');
+    const [activity, setActivity] = useState("all");
     //1. Xác định các list và số lượng task trong từng list
     let lists = {};
     tasks.forEach(task => {
@@ -250,19 +286,29 @@ function Reminder({tasks}) {
     for(const [key,value] of Object.entries(listCategories)){
         categoryCount[key] = value.length;
     }
-    //3. Xác định MainTable sẽ có nội dung gì (nội dung sẽ được chỉ định ở bên phía side bar)
-    let content = "All";
     //4. Với từng nội dung thì sẽ xác định header name, số task đã hoàn thành và danh sách các list tương ứng
     let header = null;
     let doneCount = null;
     let renderList = {};
-    switch(content){
-        case "All":
+    switch(activity){
+        case "all":
             header = "All";
             doneCount = categoryCount.done;
             for(const [key,val] of Object.entries(lists)){
                 renderList[key] = val.not_done;
             }
+            break;
+        case "today":
+            header = "Today";
+            doneCount = categoryCount.done;
+            break;
+        case "scheduled":
+            header = "Scheduled";
+            doneCount = 0;
+            break;
+        case "done":
+            header = "Done";
+            doneCount = 0;
             break;
         default:
             break;
@@ -273,8 +319,16 @@ function Reminder({tasks}) {
                 categoryCount={categoryCount} 
                 listCount={listCount} 
                 filterText={filterText} 
-                onFilterTextChange={setFilterText} />
-            <MainTable name={header} taskDoneCount={doneCount} listLists={renderList}/>
+                onFilterTextChange={setFilterText} 
+                activity={activity}
+                onActivityChange={setActivity}    
+            />
+            <MainTable 
+                name={header} 
+                taskDoneCount={doneCount} 
+                listLists={renderList}
+                activity={activity}
+            />
         </div>
     );
 }
