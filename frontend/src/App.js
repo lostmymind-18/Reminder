@@ -322,10 +322,12 @@ function Reminder({tasks}) {
             }
         }
     });
-    let categoryCount = {};
-    for(const [key,value] of Object.entries(listCategories)){
-        categoryCount[key] = value.length;
-    }
+    let categoryCount = {
+        all: listCategories.all.length,
+        today: listCategories.today.done.length,
+        done: listCategories.done.length,
+        scheduled: listCategories.scheduled.not_done.length,
+    };
     //4. Với từng nội dung thì sẽ xác định header name, số task đã hoàn thành và danh sách các list tương ứng
     let header = null;
     let doneCount = null;
@@ -357,13 +359,13 @@ function Reminder({tasks}) {
             header = "Result for " + filterText;
             const resultList = tasks.filter(task=>
                 task.content.includes(filterText)
-            )
+            );
             doneCount = resultList.filter(task=>
                 task.status === 'done'
-            );
-            renderList = resultList.filter(task=>
-                task.status !== 'done'
-            );
+            ).length;
+            renderList = {'':resultList.filter(task=>
+                 task.status !== 'done'
+            )};
             break;
         default:
             break;
