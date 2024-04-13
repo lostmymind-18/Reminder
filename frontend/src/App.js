@@ -1,7 +1,8 @@
 import './App.css';
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 
-function MenuItem({name,taskCount,activity,onActivityChange}){
+function MenuItem({name,taskCount,last2activities,onLast2ActivitiesChange}){
+    let activity = last2activities[0];
     let bgcolor = "rgb(82,83,84)";
     let color = "rgb(206,207,209)";
     if(name==="scheduled" && activity==="scheduled")
@@ -19,7 +20,9 @@ function MenuItem({name,taskCount,activity,onActivityChange}){
         <div 
             className="MenuItem" 
             style={{backgroundColor:bgcolor,color:color}}
-            onClick={()=>{onActivityChange(name)}}
+            onClick={()=>{
+                onLast2ActivitiesChange([name, ...last2activities.slice(0,1)]);
+            }}
         >
             <div className="MenuItem-row">
                 <div className="MenuItem-tasks-count">
@@ -35,15 +38,15 @@ function MenuItem({name,taskCount,activity,onActivityChange}){
     )
 }
 
-function Menu({categoryCount,activity,onActivityChange}){
+function Menu({categoryCount,last2activities,onLast2ActivitiesChange}){
     const listMenuItems = [];
     for(const [key,value] of Object.entries(categoryCount)){
         listMenuItems.push(
             <MenuItem 
                 name={key} 
                 taskCount={value} 
-                activity={activity}
-                onActivityChange={onActivityChange}
+                last2activities={last2activities}
+                onLast2ActivitiesChange={onLast2ActivitiesChange}
             />
         );
     }
@@ -54,10 +57,14 @@ function Menu({categoryCount,activity,onActivityChange}){
     );
 }
 
-function SearchBar({filterText, onFilterTextChange}){
+function SearchBar({filterText, onFilterTextChange,last2activities,onLast2ActivitiesChange}){
+    function search(){
+        if(filterText!=='')
+            onLast2ActivitiesChange(['search', ...last2activities.slice(0,1)]);
+    }
     return (
         <div className="SearchBar">
-            <div className="SearchBar-search-icon">
+            <div className="SearchBar-search-icon" onClick={search}>
                 <svg xmlns="http://www.w3.org/2000/svg" 
                     width="13" height="13" fill="rgb(225,225,225)" class="bi bi-search" viewBox="0 0 16 16">
                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
@@ -133,17 +140,19 @@ function AddList(){
     )
 }
 
-function SideBar({categoryCount,listCount, filterText, onFilterTextChange,activity,onActivityChange}){
+function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2activities,onLast2ActivitiesChange}){
     return (
         <div className="SideBar">
             <SearchBar 
                 filterText={filterText} 
                 onFilterTextChange={onFilterTextChange}
+                last2activities={last2activities}
+                onLast2ActivitiesChange={onLast2ActivitiesChange}
             />
             <Menu 
                 categoryCount={categoryCount} 
-                activity={activity}
-                onActivityChange={onActivityChange}
+                last2activities={last2activities}
+                onLast2ActivitiesChange={onLast2ActivitiesChange}
             />
             <MyList listCount={listCount}/>
             <AddList/>
@@ -213,9 +222,10 @@ function TaskList({listName, tasks}){
     })
     return (
         <>
-        <div className="TaskListName-Name">
+        {listName !=='' && <div className="TaskListName-Name">
             {listName}
         </div>
+        }
         {taskList}
         </>
     )
@@ -236,7 +246,7 @@ function TaskTable({listLists}){
     )
 }
 
-function MainTable({name,taskDoneCount,listLists,activity}){
+function MainTable({name,taskDoneCount,listLists,last2activities}){
     return (
         <div className="MainTable">
             <Heading name={name} taskDoneCount={taskDoneCount}/>
@@ -247,8 +257,28 @@ function MainTable({name,taskDoneCount,listLists,activity}){
 
 function Reminder({tasks}) {
     const [filterText, setFilterText] = useState('');
-    const [activity, setActivity] = useState("all");
-    //1. Xác định các list và số lượng task trong từng list
+    const [last2activities, setLast2Activities] = useState(['all','none']);
+    useEffect(()=>{
+        if(filterText==='' && last2activities[0]==='search')
+            setLast2Activities([last2activities[1],'search']);
+    },[filterText])
+    //Determine task lists
+    /*
+    lists = {
+        listA: {
+            done:[],
+            not_done:[]
+        },
+        listB:{
+            done:[],
+            not_done:[]
+        }
+        listC:{
+            done:[],
+            not_done:[]
+        }
+    }
+    */
     let lists = {};
     tasks.forEach(task => {
         if(!Object.hasOwn(lists,task.listName))
@@ -261,24 +291,34 @@ function Reminder({tasks}) {
             lists[task.listName].not_done.push(task);
         }
     );
+
     let listCount = {};
     for (const [key,value] of Object.entries(lists)){
         listCount[key] = value.not_done.length;
     }
 
     //2. Xác định các danh mục và số lượng task trong từng danh mục
-    let listCategories = {all:[],today:[],done:[],scheduled:[]};
+    let listCategories = {all:[],today:{done:[],not_done:[]},
+                        done:[],scheduled:{done:[],not_done:[]}};
     tasks.forEach(task=>{
         if(task.status === "done")
             listCategories.done.push(task);
-        else{
+        else
             listCategories.all.push(task);
-            if(task.time!==""){
-            listCategories.scheduled.push(task);
+
+        if(task.time!==""){
+            if(task.status==="done")
+                listCategories.scheduled.done.push(task);
+            else
+                listCategories.scheduled.not_done.push(task);
+
             const taskDate = new Date(task.time);
             const today = new Date();
-            if(taskDate < today)
-                listCategories.today.push(task);
+            if(taskDate < today){
+                if(task.status === 'done')
+                    listCategories.today.done.push(task);
+                else
+                    listCategories.today.not_done.push(task);
             }
         }
     });
@@ -290,6 +330,7 @@ function Reminder({tasks}) {
     let header = null;
     let doneCount = null;
     let renderList = {};
+    const activity = last2activities[0];
     switch(activity){
         case "all":
             header = "All";
@@ -300,15 +341,29 @@ function Reminder({tasks}) {
             break;
         case "today":
             header = "Today";
-            doneCount = categoryCount.done;
+            doneCount = listCategories.today.done.length;
+            renderList = {'':listCategories.today.not_done};
             break;
         case "scheduled":
             header = "Scheduled";
-            doneCount = 0;
+            doneCount = listCategories.scheduled.done.length;
+            renderList = {'':listCategories.scheduled.not_done};
             break;
         case "done":
             header = "Done";
             doneCount = 0;
+            break;
+        case "search":
+            header = "Result for " + filterText;
+            const resultList = tasks.filter(task=>
+                task.content.includes(filterText)
+            )
+            doneCount = resultList.filter(task=>
+                task.status === 'done'
+            );
+            renderList = resultList.filter(task=>
+                task.status !== 'done'
+            );
             break;
         default:
             break;
@@ -320,28 +375,28 @@ function Reminder({tasks}) {
                 listCount={listCount} 
                 filterText={filterText} 
                 onFilterTextChange={setFilterText} 
-                activity={activity}
-                onActivityChange={setActivity}    
+                last2activities={last2activities}
+                onLast2ActivitiesChange={setLast2Activities}    
             />
             <MainTable 
                 name={header} 
                 taskDoneCount={doneCount} 
                 listLists={renderList}
-                activity={activity}
+                last2activities={last2activities}
             />
         </div>
     );
 }
 
 const TASKS = [
-    {listName: "Reminder", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22:00Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "Reminder", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", content: "This is a task", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
-    {listName: "My Goals", content: "This is a task", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
+    {listName: "Reminder", content: "This is task A", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-10T14:22:00Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is task B", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is task C", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-12T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "Reminder", content: "This is task D", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-11T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is task E", status:"not done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-15T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is task F", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-15T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is task G", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-15T14:22Z",location:"some location",priority:"some priority",image:"some image link"},
+    {listName: "My Goals", content: "This is task H", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-15T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
 ];
 
 // const CATEGORIES = [
