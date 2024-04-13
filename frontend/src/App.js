@@ -1,6 +1,8 @@
 import { render } from '@testing-library/react';
 import './App.css';
+import './AddNewList.js'
 import {useEffect, useState} from 'react'
+import AddNewList from './AddNewList.js';
 
 function MenuItem({name,taskCount,last2activities,onLast2ActivitiesChange}){
     let activity = last2activities[0];
@@ -145,9 +147,14 @@ function MyList({listCount, last2activities, onLast2ActivitiesChange,listsConf})
     )
 }
 
-function AddList(){
+function AddList({onAddNewListChange}){
     return (
-        <div className="AddList">
+        <div 
+            className="AddList" 
+            onClick={()=>{
+                onAddNewListChange(true);
+            }}
+        >
             <div className="AddList-add-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="rgb(206,207,209)" class="bi bi-plus-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
@@ -161,7 +168,10 @@ function AddList(){
     )
 }
 
-function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2activities,onLast2ActivitiesChange,listsConf}){
+function SideBar({categoryCount,listCount, filterText, 
+                onFilterTextChange,last2activities,onLast2ActivitiesChange,
+                listsConf, addNewList, onAddNewListChange
+                }){
     return (
         <div className="SideBar">
             <SearchBar 
@@ -181,7 +191,9 @@ function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2a
                 onLast2ActivitiesChange={onLast2ActivitiesChange}
                 listsConf={listsConf}
             />
-            <AddList/>
+            <AddList  
+                onAddNewListChange={onAddNewListChange}
+            />
         </div>
     )
 }
@@ -301,6 +313,7 @@ function MainTable({name,taskDoneCount,listLists,last2activities,listsConf}){
 function Reminder({tasks,listsConf}) {
     const [filterText, setFilterText] = useState('');
     const [last2activities, setLast2Activities] = useState(['all','none']);
+    const [addNewList, setAddNewList] = useState(false);
     useEffect(()=>{
         if(filterText==='' && last2activities[0]==='search')
             setLast2Activities([last2activities[1],'search']);
@@ -420,7 +433,11 @@ function Reminder({tasks,listsConf}) {
         renderList = {"":lists[listName].not_done};
     }
     return (
-        <div className="Reminder">
+    <>
+        <div 
+            className={"Reminder"}
+            style={{filter: addNewList && 'blur(1px)'}}
+        >
             <SideBar 
                 categoryCount={categoryCount} 
                 listCount={listCount} 
@@ -429,6 +446,8 @@ function Reminder({tasks,listsConf}) {
                 last2activities={last2activities}
                 onLast2ActivitiesChange={setLast2Activities}
                 listsConf={listsConf}    
+                addNewList={addNewList}
+                onAddNewListChange={setAddNewList}
             />
             <MainTable 
                 name={header} 
@@ -438,6 +457,8 @@ function Reminder({tasks,listsConf}) {
                 listsConf={listsConf}
             />
         </div>
+            {addNewList===true && <AddNewList onAddNewListChange={setAddNewList}/>}
+    </>
     );
 }
 

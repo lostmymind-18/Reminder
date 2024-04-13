@@ -1,0 +1,13 @@
+.AddNewList{
+    position: fixed;
+    width: 450px;
+    height: 250px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -70%);
+    background-color: rgb(37,39,40);
+    border-style: solid;
+    border-radius: 7px;
+    border-width: 1px;
+    border-color: rgb(80,81,82);
+}
