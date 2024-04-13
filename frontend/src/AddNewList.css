@@ -1,6 +1,6 @@
 .AddNewList{
     position: fixed;
-    width: 450px;
+    width: 500px;
     height: 250px;
     left: 50%;
     top: 50%;
@@ -10,4 +10,25 @@
     border-radius: 7px;
     border-width: 1px;
     border-color: rgb(80,81,82);
+    box-sizing: border-box;
+    padding: 0 25px;
+    color: white;
+}
+
+.input input{
+    background-color: rgb(48,49,50);
+    width: 380px;
+    float: right;
+    color: white;
+    font-size: medium;
+}
+
+.input span{
+    float: right;
+    margin-right: 10px;
+}
+
+.row{
+    margin-top: 100px;
+    
 }
