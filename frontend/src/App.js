@@ -1,3 +1,4 @@
+import { render } from '@testing-library/react';
 import './App.css';
 import {useEffect, useState} from 'react'
 
@@ -88,11 +89,24 @@ function SearchBar({filterText, onFilterTextChange,last2activities,onLast2Activi
     );
 }
 
-function ListItem({name, taskCount}){
+function ListItem({name, taskCount,last2activities,onLast2ActivitiesChange,listsConf}){
+    let iconColor = listsConf.filter(conf=>
+                        conf.listName===name)[0].color;
+    let bgcolor = "transparent";
+    let color = "rgb(99,99,102)";
+    if(last2activities[0] === 'mylist' + name){
+        bgcolor = "rgb(14, 82, 230)";
+        color = "rgb(255,255,255)";
+    }
     return (
-        <div className="ListItem">
+        <div className="ListItem" 
+            style={{backgroundColor:bgcolor}}
+            onClick={()=>{
+                onLast2ActivitiesChange(['mylist'+name,...last2activities.slice(0,1)]);
+            }}
+        >
             <div className="ListItem-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-filter-circle" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill={iconColor} class="bi bi-filter-circle" viewBox="0 0 16 16">
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
                     <path d="M7 11.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5"/>
                 </svg>
@@ -100,18 +114,25 @@ function ListItem({name, taskCount}){
             <div className="ListItem-name">
                 {name}
             </div>
-            <div className="ListItem-count">
+            <div className="ListItem-count"
+                style={{color:color}}>
                 {taskCount}
             </div>
         </div>
     )
 }
 
-function MyList({listCount}){
+function MyList({listCount, last2activities, onLast2ActivitiesChange,listsConf}){
     const listListItems = [];
     for(const [key,value] of Object.entries(listCount)){
         listListItems.push(
-            <ListItem name={key} taskCount={value}></ListItem>
+            <ListItem 
+                name={key} 
+                taskCount={value}
+                last2activities={last2activities}
+                onLast2ActivitiesChange={onLast2ActivitiesChange}
+                listsConf={listsConf}
+            />
         );
     }
     return (
@@ -140,7 +161,7 @@ function AddList(){
     )
 }
 
-function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2activities,onLast2ActivitiesChange}){
+function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2activities,onLast2ActivitiesChange,listsConf}){
     return (
         <div className="SideBar">
             <SearchBar 
@@ -154,13 +175,24 @@ function SideBar({categoryCount,listCount, filterText, onFilterTextChange,last2a
                 last2activities={last2activities}
                 onLast2ActivitiesChange={onLast2ActivitiesChange}
             />
-            <MyList listCount={listCount}/>
+            <MyList 
+                listCount={listCount} 
+                last2activities={last2activities}
+                onLast2ActivitiesChange={onLast2ActivitiesChange}
+                listsConf={listsConf}
+            />
             <AddList/>
         </div>
     )
 }
 
-function Heading({name,taskDoneCount}){
+function Heading({name,taskDoneCount,last2activities,listsConf}){
+    let headingColor = "rgb(99,99,102)";
+    const activity = last2activities[0];
+    if(activity.slice(0,6) === 'mylist')
+        headingColor = listsConf.filter(
+            conf=>conf.listName===activity.slice(6)
+        )[0].color;
     return (
         <>
             <div className="Heading">
@@ -169,7 +201,7 @@ function Heading({name,taskDoneCount}){
                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
                     </svg>
                 </div>
-                <div className="Heading-name">
+                <div className="Heading-name" style={{color:headingColor}}>
                     {name}
                 </div>
             </div>
@@ -177,10 +209,16 @@ function Heading({name,taskDoneCount}){
                 <div className="inform-text">
                     There are {taskDoneCount} tasks done &#8729;&nbsp;
                 </div>
-                <div className="delete-completed-tasks">
+                <div 
+                    className="delete-completed-tasks" 
+                    style={{color:headingColor}}
+                >
                     Delete
                 </div>
-                <div className="show-completed-tasks">
+                <div 
+                    className="show-completed-tasks" 
+                    style={{color:headingColor}}
+                >
                     Show
                 </div>
             </div>
@@ -246,16 +284,21 @@ function TaskTable({listLists}){
     )
 }
 
-function MainTable({name,taskDoneCount,listLists,last2activities}){
+function MainTable({name,taskDoneCount,listLists,last2activities,listsConf}){
     return (
         <div className="MainTable">
-            <Heading name={name} taskDoneCount={taskDoneCount}/>
+            <Heading 
+                name={name} 
+                taskDoneCount={taskDoneCount}
+                last2activities={last2activities}
+                listsConf={listsConf}
+            />
             <TaskTable listLists={listLists}/>
         </div>
     )
 }
 
-function Reminder({tasks}) {
+function Reminder({tasks,listsConf}) {
     const [filterText, setFilterText] = useState('');
     const [last2activities, setLast2Activities] = useState(['all','none']);
     useEffect(()=>{
@@ -370,6 +413,12 @@ function Reminder({tasks}) {
         default:
             break;
     }
+    if(activity.slice(0,6) === 'mylist'){
+        const listName = activity.slice(6);
+        header = listName;
+        doneCount = lists[listName].done.length;
+        renderList = {"":lists[listName].not_done};
+    }
     return (
         <div className="Reminder">
             <SideBar 
@@ -378,13 +427,15 @@ function Reminder({tasks}) {
                 filterText={filterText} 
                 onFilterTextChange={setFilterText} 
                 last2activities={last2activities}
-                onLast2ActivitiesChange={setLast2Activities}    
+                onLast2ActivitiesChange={setLast2Activities}
+                listsConf={listsConf}    
             />
             <MainTable 
                 name={header} 
                 taskDoneCount={doneCount} 
                 listLists={renderList}
                 last2activities={last2activities}
+                listsConf={listsConf}
             />
         </div>
     );
@@ -401,6 +452,11 @@ const TASKS = [
     {listName: "My Goals", content: "This is task H", status:"done",note:"This is some note",tags:["tag 1","tag 2"],time:"2024-04-15T14:22Z",location:"some location",priority:"some priority",image:"some image link"}
 ];
 
+const LISTS_CONF = [
+    {listName: "Reminder",color:"rgb(230, 188, 62)"},
+    {listName: "My Goals",color:"rgb(12, 184, 196)"}
+];
+
 // const CATEGORIES = [
 //     "Today", "All","Done", "Scheduled"
 // ];
@@ -408,7 +464,7 @@ const TASKS = [
 export default function App(){
     return (
         <div className="App">
-            <Reminder tasks={TASKS}/>
+            <Reminder tasks={TASKS} listsConf={LISTS_CONF}/>
         </div>
     );
 };
