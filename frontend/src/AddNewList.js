@@ -1,4 +1,6 @@
 import './AddNewList.css'
+import EmojiPicker from 'emoji-picker-react';
+import { Emoji } from 'emoji-picker-react';
 import {useState} from 'react'
 
 const ListColors = ['rgb(236,85,70)','rgb(242,163,60)','rgb(249,215,74)',
@@ -6,10 +8,45 @@ const ListColors = ['rgb(236,85,70)','rgb(242,163,60)','rgb(249,215,74)',
                     'rgb(94,92,222)','rgb(236,93,123)','rgb(201,131,238)',
                     'rgb(196,167,124)','rgb(117,125,134)','rgb(227,183,176)'];
 
+
+function IconPicker({type}){
+    const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
+    const [pickedEmoji, setPickedEmoji] = useState({unified:"1f423"});
+
+    function emojiPickCallback(emojiData, _){
+        setPickedEmoji(emojiData);
+        setOpenEmojiPicker(false);
+    }
+
+    return <>
+        <div className='icon-picker' onClick={()=>{setOpenEmojiPicker(true)}}>
+        {(type==='type1' && Object.keys(pickedEmoji).length > 0)&&  
+            <Emoji 
+                unified={pickedEmoji.unified}
+                size={25}
+            />
+        }
+        </div>
+        {openEmojiPicker === true && 
+            <div className='table-icon'>
+                <EmojiPicker 
+                    open={openEmojiPicker}
+                    onEmojiClick={emojiPickCallback}
+                    theme='dark' 
+                    emojiStyle='apple'
+                    width={300}
+                    height={400}
+                />
+            </div>
+        }    
+        </>
+}
+
 export default function AddNewList({onAddNewListChange}){
     const [name, setName] = useState("");
     const [pickedColor, setPickedColor] = useState(ListColors[0]);
     const [pickedIconType, setPickedIconType] = useState("type1");
+    
     const listColorItems = ListColors.map(color=>
         <div 
             key={color} 
@@ -30,7 +67,12 @@ export default function AddNewList({onAddNewListChange}){
     return <div className='AddNewList'>
         <h4 style={{color:'white'}}>New list</h4>
         <div className="input">
-           <span>Name:</span> <input/>
+           <span>Name:</span> 
+           <input
+                type="text"
+                value={name}
+                onChange={(e)=>{setName(e.target.value)}}
+           />
         </div>
         <div className="row">
             <div className="color-selection">
@@ -53,13 +95,14 @@ export default function AddNewList({onAddNewListChange}){
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill={pickedColor} class="bi bi-circle-fill" viewBox="0 0 16 16">
                                     <circle cx="8" cy="8" r="8"/>
                                 </svg>
+                                <IconPicker type={"type1"}/>
                             </>:
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill={pickedColor} class="bi bi-circle-fill" viewBox="0 0 16 16">
                                 <circle cx="8" cy="8" r="8"/>
                             </svg>
                         }
                     </div>
-                    <div className="show" onClick={()=>{setPickedIconType("type2")}}>
+                    {/* <div className="show" onClick={()=>{setPickedIconType("type2")}}>
                         {pickedIconType==="type2" ?
                             <>
                                 <div className="show-outline">
@@ -70,18 +113,23 @@ export default function AddNewList({onAddNewListChange}){
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill={pickedColor} class="bi bi-circle-fill" viewBox="0 0 16 16">
                                     <circle cx="8" cy="8" r="8"/>
                                 </svg>
+                                <IconPicker type={"type2"}/>
                             </>:
                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill={pickedColor} class="bi bi-circle-fill" viewBox="0 0 16 16">
                                 <circle cx="8" cy="8" r="8"/>
                             </svg>
                         }
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
         <div className="buttons">
             <button className="button button-activated" onClick={()=>{onAddNewListChange(false)}}>Cancel</button>
-            <button className="button button-inactivated" onClick={()=>{onAddNewListChange(false)}}>OK</button>
+            {name===''?
+                <button className="button button-inactivated">OK</button>
+            :
+                <button className="button button-activated" onClick={()=>{onAddNewListChange(false)}}>OK</button>
+            }
         </div>
     </div>
 }
