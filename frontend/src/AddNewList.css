@@ -1,7 +1,7 @@
 .AddNewList{
     position: fixed;
     width: 500px;
-    height: 250px;
+    height: 230px;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -70%);
@@ -11,24 +11,120 @@
     border-width: 1px;
     border-color: rgb(80,81,82);
     box-sizing: border-box;
-    padding: 0 25px;
+    padding: 0 20px;
     color: white;
+}
+
+.AddNewList span{
+    font-size:12px;
+    font-weight: 530;
+}
+
+.input{
+    text-align: left;
 }
 
 .input input{
+    display: inline-block;
     background-color: rgb(48,49,50);
-    width: 380px;
-    float: right;
+    width: 399px;
     color: white;
-    font-size: medium;
+    font-size:13px;
 }
 
 .input span{
-    float: right;
-    margin-right: 10px;
+    margin-right: 9px;
 }
 
 .row{
-    margin-top: 100px;
-    
+   display: flex;
+   width: 100%;
+   padding: 20px 0;
+   border-bottom: 1px rgb(60,61,62) solid;
+}
+
+.color-selection{
+    width: 50%;
+    display: flex;
+    border-right: 1px rgb(60,61,62) solid; 
+}
+
+.color-selection span{
+    margin-left: 3px;
+}
+
+.color-table{
+    width: 130px;
+    height: 50px;
+    margin-left: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.icon-selection{
+    width: 50%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.icon-show{
+    width: 140px;
+    height: 50px;
+    margin-left: 15px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.buttons{
+    width: 150px;
+    height: 52px;
+    display: flex;
+    float: right;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.button{
+    height: 21px;
+    text-align:center;
+    width: 53px;
+    font-size: 13px;
+    font-weight: 550;
+    border: none;
+    border-radius: 6px;
+}
+
+.button:nth-of-type(1){
+    margin-right: 10px;
+}
+
+.button-activated{
+    background-color: rgb(90,91,92);
+    color: rgb(214,214,214);
+}
+
+.button-inactivated{
+    background-color: rgb(63,64,64);
+    color: rgb(111,112,112);
+}
+
+.show{
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.show:nth-of-type(1){
+    margin-right: 5px;
+}
+
+.show-outline{
+    position: absolute;
+    top:0;
+    left:0;
 }
